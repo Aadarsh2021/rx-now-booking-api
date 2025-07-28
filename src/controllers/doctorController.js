@@ -1,16 +1,19 @@
 const DoctorModel = require('../models/doctorModel');
+const { paginateResults } = require('../utils/pagination');
 
 class DoctorController {
   // GET /api/doctors - List all doctors
   static async getAllDoctors(req, res) {
     try {
+      const { page = 1, limit = 10 } = req.query;
       const doctors = DoctorModel.getAllDoctors();
+      
+      const paginatedResults = paginateResults(doctors, parseInt(page), parseInt(limit));
       
       res.json({
         success: true,
         message: 'Doctors retrieved successfully',
-        data: doctors,
-        count: doctors.length
+        ...paginatedResults
       });
     } catch (error) {
       res.status(500).json({

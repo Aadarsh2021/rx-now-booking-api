@@ -10,6 +10,11 @@ A RESTful API service for managing doctor listings and appointment bookings betw
 - **Time Slot Validation**: Prevents double booking of appointments
 - **Clean Architecture**: Separation of concerns with MVC pattern
 - **Error Handling**: Comprehensive error handling and validation
+- **API Documentation**: Interactive Swagger documentation
+- **Caching**: In-memory caching for improved performance
+- **Pagination**: Support for paginated responses
+- **Docker Support**: Containerized deployment
+- **Input Validation**: Comprehensive request validation
 
 ## 📋 API Endpoints
 
@@ -48,8 +53,21 @@ A RESTful API service for managing doctor listings and appointment bookings betw
 
 - Node.js (v14 or higher)
 - npm or yarn
+- Docker (optional, for containerized deployment)
 
-### Installation
+### Quick Setup
+
+#### Option 1: Using Setup Scripts
+```bash
+# On Windows
+setup.bat
+
+# On Linux/Mac
+chmod +x setup.sh
+./setup.sh
+```
+
+#### Option 2: Manual Setup
 
 1. **Clone the repository**
    ```bash
@@ -71,10 +89,20 @@ A RESTful API service for managing doctor listings and appointment bookings betw
    npm start
    ```
 
+#### Option 3: Docker Setup
+```bash
+# Build and run with Docker
+docker-compose up
+
+# Or build manually
+docker build -t doctor-booking-api .
+docker run -p 3000:3000 doctor-booking-api
+   ```
+
 4. **Access the API**
    - Server will run on `http://localhost:3000`
    - Health check: `http://localhost:3000/health`
-   - API documentation: `http://localhost:3000/`
+   - API documentation: `http://localhost:3000/api-docs`
 
 ## 📝 API Examples
 
@@ -92,22 +120,22 @@ curl -X POST http://localhost:3000/api/appointments \
   }'
 ```
 
-### Get All Doctors
+### Get All Doctors (with pagination)
 
 ```bash
-curl http://localhost:3000/api/doctors
+curl "http://localhost:3000/api/doctors?page=1&limit=5"
 ```
 
 ### Get Appointments for a Doctor
 
 ```bash
-curl "http://localhost:3000/api/appointments?doctor_id=1"
+curl "http://localhost:3000/api/appointments?doctor_id=1&page=1&limit=10"
 ```
 
 ### Get Appointments for a Patient
 
 ```bash
-curl "http://localhost:3000/api/appointments?patient_id=101"
+curl "http://localhost:3000/api/appointments?patient_id=101&page=1&limit=10"
 ```
 
 ## 🏗️ Project Structure
@@ -124,9 +152,18 @@ backend/
 │   ├── routes/
 │   │   ├── doctorRoutes.js
 │   │   └── appointmentRoutes.js
-│   ├── services/
 │   ├── middleware/
+│   │   ├── cache.js
+│   │   └── validation.js
+│   ├── utils/
+│   │   └── pagination.js
+│   ├── config/
+│   │   └── swagger.js
 │   └── server.js
+├── Dockerfile
+├── docker-compose.yml
+├── setup.sh
+├── setup.bat
 ├── package.json
 └── README.md
 ```
@@ -138,13 +175,37 @@ The application uses environment variables for configuration:
 - `PORT` - Server port (default: 3000)
 - `NODE_ENV` - Environment (development/production)
 
+### Environment Variables
+
+Create a `.env` file in the root directory:
+
+```env
+NODE_ENV=development
+PORT=3000
+```
+
+### Docker Configuration
+
+The application includes Docker support for easy deployment:
+
+- `Dockerfile` - Container configuration
+- `docker-compose.yml` - Multi-container setup
+- `.dockerignore` - Exclude unnecessary files
+
 ## 🧪 Testing
 
 You can test the API using:
 
 - **Postman**: Import the collection and test endpoints
 - **cURL**: Use command line examples above
+- **Swagger UI**: Visit `http://localhost:3000/api-docs` for interactive documentation
 - **Browser**: Visit `http://localhost:3000/` for API overview
+
+### API Documentation
+
+The API includes comprehensive Swagger documentation available at:
+- **Swagger UI**: `http://localhost:3000/api-docs`
+- **OpenAPI Spec**: `http://localhost:3000/api-docs/swagger.json`
 
 ## 📊 Sample Data
 
@@ -172,6 +233,28 @@ The API returns consistent error responses:
 }
 ```
 
+### Validation Errors
+
+Input validation errors include detailed field-specific messages:
+
+```json
+{
+  "success": false,
+  "message": "Validation failed",
+  "errors": [
+    "Doctor ID is required",
+    "Date must be in YYYY-MM-DD format"
+  ]
+}
+```
+
+### Caching
+
+The API includes in-memory caching for improved performance:
+- GET requests are cached for 5 minutes by default
+- Cache can be cleared programmatically
+- Cache statistics are available for monitoring
+
 ## 🔒 Security Notes
 
 - No authentication required (as per requirements)
@@ -180,12 +263,24 @@ The API returns consistent error responses:
 
 ## 🚀 Deployment
 
-For production deployment:
+### Docker Deployment
+
+```bash
+# Build and run with Docker Compose
+docker-compose up -d
+
+# Or build manually
+docker build -t doctor-booking-api .
+docker run -d -p 3000:3000 --name doctor-api doctor-booking-api
+```
+
+### Production Deployment
 
 1. Set `NODE_ENV=production`
 2. Use a process manager like PM2
 3. Set up proper logging
 4. Consider using a persistent database
+5. Use environment variables for configuration
 
 ## 📞 Support
 

@@ -1,5 +1,6 @@
 const AppointmentModel = require('../models/appointmentModel');
 const DoctorModel = require('../models/doctorModel');
+const { paginateResults } = require('../utils/pagination');
 
 class AppointmentController {
   // POST /api/appointments - Book an appointment
@@ -64,7 +65,7 @@ class AppointmentController {
   // GET /api/appointments - Get appointments with filters
   static async getAppointments(req, res) {
     try {
-      const { doctor_id, patient_id, status } = req.query;
+      const { doctor_id, patient_id, status, page = 1, limit = 10 } = req.query;
 
       let appointments;
 
@@ -78,11 +79,12 @@ class AppointmentController {
         appointments = AppointmentModel.getAllAppointments();
       }
 
+      const paginatedResults = paginateResults(appointments, parseInt(page), parseInt(limit));
+
       res.json({
         success: true,
         message: 'Appointments retrieved successfully',
-        data: appointments,
-        count: appointments.length
+        ...paginatedResults
       });
     } catch (error) {
       res.status(500).json({

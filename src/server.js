@@ -1,9 +1,12 @@
 const express = require('express');
 const cors = require('cors');
+const swaggerUi = require('swagger-ui-express');
 require('dotenv').config();
 
 const doctorRoutes = require('./routes/doctorRoutes');
 const appointmentRoutes = require('./routes/appointmentRoutes');
+const specs = require('./config/swagger');
+const { cacheMiddleware } = require('./middleware/cache');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -13,9 +16,12 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Routes
-app.use('/api/doctors', doctorRoutes);
-app.use('/api/appointments', appointmentRoutes);
+// Swagger documentation
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
+
+// Routes with caching
+app.use('/api/doctors', cacheMiddleware(300), doctorRoutes);
+app.use('/api/appointments', cacheMiddleware(300), appointmentRoutes);
 
 // Health check endpoint
 app.get('/health', (req, res) => {
@@ -31,6 +37,7 @@ app.get('/', (req, res) => {
   res.json({
     message: 'Welcome to Doctor-Patient Booking API',
     version: '1.0.0',
+    documentation: '/api-docs',
     endpoints: {
       doctors: '/api/doctors',
       appointments: '/api/appointments',
@@ -59,6 +66,7 @@ app.use('*', (req, res) => {
 app.listen(PORT, () => {
   console.log(`🚀 Server is running on port ${PORT}`);
   console.log(`📋 Health check: http://localhost:${PORT}/health`);
+  console.log(`📚 API Documentation: http://localhost:${PORT}/api-docs`);
   console.log(`👨‍⚕️ Doctors API: http://localhost:${PORT}/api/doctors`);
   console.log(`📅 Appointments API: http://localhost:${PORT}/api/appointments`);
 }); 
